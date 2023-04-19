@@ -1,15 +1,21 @@
 ﻿#include<iostream>
 #include<vector>
 #include<unordered_set>
- 
-struct Edge {
-        int src, dest;
-    };
+using namespace std;
 
+struct Vertex
+{
+    int number;
+    Vertex* next;
+};
+struct Edge
+{
+    int start, end;
+};
 class IGraph 
 {
 public:
-   
+    
     virtual ~IGraph() {}
     IGraph() {};
     IGraph(IGraph* _oth) {};
@@ -18,43 +24,64 @@ public:
     virtual void GetNextVertices(int vertex, std::vector<int>& vertices) const = 0; // Для конкретной вершины метод выводит в вектор “вершины” все вершины, в которые можно дойти по ребру из данной
     virtual void GetPrevVertices(int vertex, std::vector<int>& vertices) const = 0; // Для конкретной вершины метод выводит в вектор “вершины” все вершины, из которых можно дойти по ребру в данную
 };
-class ListGraph: IGraph
+class ListGraph: public IGraph
 {
 private:
-    std::vector<std::vector<int>> adjList;
+    int num_nodes;
+    Vertex* getNewVertex(int _number, Vertex* ver)
+    {
+        Vertex* node = new Vertex;
+        node->number = _number;
+        node->next = ver;
+        return node;
+    }
 public:
-    ListGraph(std::vector<Edge> const& edges, int n)
+    Vertex** head;
+    ListGraph(Edge _edges[], int knot, int rib)
     {
-        adjList.resize(n);
-        for (auto& edge : edges)
+        head = new Vertex * [knot];
+        this->num_nodes = knot;
+        for (int i = 0; i < knot; i++)
         {
-            adjList[edge.src].push_back(edge.dest);
+            head[i] = nullptr;
         }
-    }
-    void printGraph(ListGraph const& graph, int n)
-    {
-        for (int i = 0; i < n; i++)
+        for (int i = 0; i < rib; i++)
         {
-            std::cout << i << " --> ";
-            for (auto v : graph.adjList[i]) 
-            {
-                std::cout << v << " ";
-            }
-            std::cout << std::endl;
+            Vertex* newNode = getNewVertex(_edges[i].end, head[_edges[i].start]);
+            head[_edges[i].start] = newNode;
         }
-    }
-    virtual void AddEdge(int from, int to)
+    };
+    void printGraph(Vertex* ptr)
     {
-
+        while (ptr != nullptr)
+        {
+            cout << " -> " << ptr->number;
+            ptr = ptr->next;
+        }
+        cout << endl;
     }
-    virtual int VerticesCount()const
+    virtual void AddEdge(int from, int to) override
     {
-        return 0;
+        Vertex* newNode = getNewVertex(to, head[from]);
+        head[from] = newNode;
     }
-    virtual void GetNextVertices(int vertex, std::vector<int>& vertices) const
+    virtual int VerticesCount()const override
+    {
+        return num_nodes;
+    }
+    virtual void GetNextVertices(int vertex, std::vector<int>& vertices) const override
     {}
-    virtual void GetPrevVertices(int vertex, std::vector<int>& vertices)const
+    virtual void GetPrevVertices(int vertex, std::vector<int>& vertices)const override
     {}
+   virtual ~ListGraph()
+    {
+        for (int i = 0; i < num_nodes; i++)
+        {
+            delete[] head[i];
+        }
+        delete[] head;
+       
+    }
 };
 class MatrixGraph :IGraph
 {
@@ -70,7 +97,7 @@ public:
         }
         for (auto& edge : edges)
         {
-            adjList[edge.src][edge.dest] = 1;
+            adjList[edge.start][edge.end] = 1;
         }
     }
     void printGraph(MatrixGraph const& graph, int n)
@@ -100,16 +127,23 @@ public:
 int main()
 {
 
-    std::vector<Edge> edges =
+  Edge edges[] =
     {
         {0, 1}, {1, 2}, {2, 0}, {2, 1}, {3, 2}, {4, 5}, {5, 4}
     };
-    int n = 6;
-    ListGraph graph(edges, n);
-    MatrixGraph grom(edges, n);
-    graph.printGraph(graph, n);
-    grom.printGraph(grom, n);
+    int N = 6;
+    int n = sizeof(edges) / sizeof(edges[0]);
 
+    ListGraph graph(edges,N, n);
+
+    for (int i = 0; i < N; i++)
+    {
+        cout << i;
+
+        graph.printGraph(graph.head[i]);
+    }
+    
+    
 
     return 0;
 }
