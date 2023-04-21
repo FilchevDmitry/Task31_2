@@ -86,18 +86,22 @@ public:
 class MatrixGraph :IGraph
 {
 private:
+    int num_nodes;
     std::vector<std::vector<int>> adjList;
 public:
-    MatrixGraph(std::vector<Edge> const& edges, int n)
+    MatrixGraph(Edge _edges[],int N, int n)
     {
-        adjList.resize(n);
+        num_nodes = N;
+        adjList.resize(N);
         for (int i = 0; i < adjList.size(); i++)
         {
-            adjList[i].resize(n,0);
+            adjList[i].resize(N,0);
         }
-        for (auto& edge : edges)
+        for (int i=0; i<n;i++)
         {
-            adjList[edge.start][edge.end] = 1;
+            int k=_edges[i].start;
+            int m=_edges[i].end;
+            adjList[k][m] = 1;
         }
     }
     void printGraph(MatrixGraph const& graph, int n)
@@ -113,11 +117,11 @@ public:
     }
     virtual void AddEdge(int from, int to)
     {
-
+        adjList[from][to] = 1;
     }
     virtual int VerticesCount()const
     {
-        return 0;
+        return num_nodes;
     }
     virtual void GetNextVertices(int vertex, std::vector<int>& vertices) const
     {}
@@ -135,16 +139,16 @@ int main()
     int n = sizeof(edges) / sizeof(edges[0]);
 
     ListGraph graph(edges,N, n);
-
+    MatrixGraph g(edges, N,n);
     for (int i = 0; i < N; i++)
     {
         cout << i;
 
         graph.printGraph(graph.head[i]);
     }
-    
+    g.printGraph(g, N);
     
 
     return 0;
 }
-//www.techiedelight.com/ru/graph-implementation-c-without-using-stl/
+
