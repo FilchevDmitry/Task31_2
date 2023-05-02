@@ -1,6 +1,5 @@
 ﻿#include<iostream>
 #include<vector>
-#include<unordered_set>
 using namespace std;
 
 struct Vertex
@@ -21,8 +20,8 @@ public:
     IGraph(IGraph* _oth) {};
     virtual void AddEdge(int from, int to) = 0; // Метод принимает вершины начала и конца ребра и добавляет ребро
     virtual int VerticesCount() const = 0; // Метод должен считать текущее количество вершин
-    virtual void GetNextVertices(int vertex, std::vector<int>& vertices) const = 0; // Для конкретной вершины метод выводит в вектор “вершины” все вершины, в которые можно дойти по ребру из данной
-    virtual void GetPrevVertices(int vertex, std::vector<int>& vertices) const = 0; // Для конкретной вершины метод выводит в вектор “вершины” все вершины, из которых можно дойти по ребру в данную
+    virtual void GetNextVertices(int vertex, vector<int>& vertices) const = 0; // Для конкретной вершины метод выводит в вектор “вершины” все вершины, в которые можно дойти по ребру из данной
+    virtual void GetPrevVertices(int vertex, vector<int>& vertices) const = 0; // Для конкретной вершины метод выводит в вектор “вершины” все вершины, из которых можно дойти по ребру в данную
 };
 class ListGraph: public IGraph
 {
@@ -51,14 +50,19 @@ public:
             head[_edges[i].start] = newNode;
         }
     };
-    void printGraph(Vertex* ptr)
+    void printGraph()
     {
-        while (ptr != nullptr)
+        for (int i = 0; i < num_nodes; i++)
         {
-            cout << " -> " << ptr->number;
-            ptr = ptr->next;
+            cout << i;
+            Vertex* ptr = head[i];
+            while (ptr != nullptr)
+            {
+                cout << " -> " << ptr->number;
+                ptr = ptr->next;
+            }
+            cout << endl;
         }
-        cout << endl;
     }
     virtual void AddEdge(int from, int to) override
     {
@@ -69,10 +73,32 @@ public:
     {
         return num_nodes;
     }
-    virtual void GetNextVertices(int vertex, std::vector<int>& vertices) const override
-    {}
+    virtual void GetNextVertices(int vertex, vector<int>& vertices) const 
+    {
+        Vertex* ptr = head[vertex];
+        while (ptr != nullptr)
+        {
+            vertices.push_back(ptr->number);
+            ptr = ptr->next;
+        }
+    }
     virtual void GetPrevVertices(int vertex, std::vector<int>& vertices)const override
-    {}
+    {
+        for (int i = 0; i < num_nodes; i++)
+        {
+      
+            Vertex* ptr = head[i];
+            while (ptr != nullptr)
+            {
+                if (ptr->number == vertex)
+                {
+                    vertices.push_back(i);
+                }
+                ptr = ptr->next;
+            }
+            
+        }
+    }
    virtual ~ListGraph()
     {
         for (int i = 0; i < num_nodes; i++)
@@ -124,31 +150,49 @@ public:
         return num_nodes;
     }
     virtual void GetNextVertices(int vertex, std::vector<int>& vertices) const
-    {}
+    {
+            for (int j = 0; j < adjList[vertex].size(); j++)
+            {
+                if (adjList[vertex][j] != 0)
+                {
+                    vertices.push_back(j);
+                }
+            }
+    }
     virtual void GetPrevVertices(int vertex, std::vector<int>& vertices)const
-    {}
+    {
+        for (int i = 0; i < num_nodes; i++)
+        {
+            for (int j = 0; j < adjList[i].size(); j++)
+            {
+                if (j==vertex && adjList[i][j]==1)
+                {
+                    vertices.push_back(i);
+                }
+            }  
+        }
+    }
 };
 int main()
 {
-
+    vector<int> vertices;
+    int temp = 0;
   Edge edges[] =
     {
         {0, 1}, {1, 2}, {2, 0}, {2, 1}, {3, 2}, {4, 5}, {5, 4}
     };
     int N = 6;
     int n = sizeof(edges) / sizeof(edges[0]);
-
     ListGraph graph(edges,N, n);
     MatrixGraph g(edges, N,n);
-    for (int i = 0; i < N; i++)
-    {
-        cout << i;
-
-        graph.printGraph(graph.head[i]);
-    }
+    graph.printGraph();
     g.printGraph(g, N);
-    
-
+    cout << "Input number vertex ";
+    cin >> temp;
+    //graph.GetNextVertices(temp, vertices);
+    //graph.GetPrevVertices(temp, vertices);
+    /*g.GetNextVertices(temp, vertices);*/
+    g.GetPrevVertices(temp, vertices);
     return 0;
 }
 
